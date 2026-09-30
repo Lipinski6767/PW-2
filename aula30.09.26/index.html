@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Minhas Playlists</title>
+        <style>
+/* ===== TEMA CLARO (padrão) ===== */
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background-color: #f3eaff;
+    color: #5e1f1f;
+    padding: 30px;
+}
+
+h1 {
+    color: #ad4444;
+}
+
+select {
+    padding: 6px;
+    font-size: 16px;
+    border-radius: 6px;
+    border: 1px solid #d87c7c;
+}
+
+button {
+    padding: 8px 14px;
+    font-size: 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.tema {
+    background-color: #5e1f1f;
+    color: white;
+}
+
+#total {
+    font-weight: bold;
+}
+
+
+/* ===== CARDS ===== */
+#cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.card {
+    background-color: white;
+    width: 200px;
+    padding: 18px;
+    border-radius: 14px;
+    border: 3px solid transparent;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+/* card que foi marcado como favorito */
+.card.favorito {
+    border-color: #f1c40f;
+}
+
+.emoji {
+    font-size: 48px;
+}
+
+.card h3 {
+    margin: 8px 0 4px 0;
+}
+
+.card p {
+    margin: 4px 0;
+}
+
+.genero {
+    color: #ad4444;
+    font-size: 14px;
+}
+
+.curtir {
+    background-color: #ad4444;
+    color: white;
+    margin-top: 8px;
+}
+
+.curtir:hover {
+    background-color: #833434;
+}
+
+.favoritar {
+    background-color: #f7dc6f;
+    color: #5e1f1f;
+    margin-top: 8px;
+}
+
+.favoritar:hover {
+    background-color: #f4d03f;
+}
+
+
+/* ===== TEMA ESCURO =====
+   Só vale quando o body tem a classe "escuro" */
+body.escuro {
+    background-color: #291010;
+    color: #ffe6e6;
+}
+
+body.escuro h1 {
+    color: #ffa8a8;
+}
+
+body.escuro select {
+    background-color: #552a2a;
+    color: white;
+    border-color: #ad4444;
+}
+
+body.escuro .tema {
+    background-color: #ffe6e6;
+    color: #291010;
+}
+
+body.escuro .card {
+    background-color: #471b1b;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+body.escuro .genero {
+    color: #ffa8a8;
+}
+
+body.escuro .curtir {
+    background-color: #ffa8a8;
+    color: #291010;
+}
+
+body.escuro .curtir:hover {
+    background-color: #f58c8c;
+}
+
+        </style>
+    </head>
+
+    <body>
+
+        <h1>🎵 Minhas Playlists</h1>
+
+        <button id="botao_tema" class="tema" onclick="trocarTema()">Modo escuro</button>
+
+        <p>Mostrar:
+            <select id="filtro" onchange="filtrar()">
+                <option value="todos">Todas</option>
+                <option value="favoritos">Favoritas</option>
+                <option value="populares">Populares (5+ curtidas)</option>
+            </select>
+        </p>
+
+        <p id="total"></p>
+
+        <!-- Os cards são criados pelo JavaScript aqui dentro -->
+        <div id="cards"></div>
+
+        <script>
+//variável que guarda o tema atual (false = claro, true = escuro)
+let escuro = false;
+
+//variável única de mensagem: tudo que aparece no alert passa por ela
+let mensagem;
+
+//array de objetos: cada objeto é uma playlist (um card)
+let playlists = [
+    { nome: "Noite de Rock",    genero: "Rock",       emoji: "🎸", curtidas: 0, favorito: false },
+    { nome: "Roda de Samba",    genero: "Samba",      emoji: "🎶", curtidas: 0, favorito: false },
+    { nome: "Pop do Momento",   genero: "Pop",        emoji: "🎤", curtidas: 0, favorito: false },
+    { nome: "Modão Sertanejo",  genero: "Sertanejo",  emoji: "🎸", curtidas: 0, favorito: false },
+    { nome: "Festa Eletrônica", genero: "Eletrônica", emoji: "🎧", curtidas: 0, favorito: false },
+    { nome: "Piano para Estudar", genero: "Clássica", emoji: "🎹", curtidas: 0, favorito: false }
+];
+
+
+function trocarTema (){
+
+    //inverte o valor: se era false vira true, se era true vira false
+    escuro = !escuro;
+
+    if (escuro){
+
+        document.body.classList.add('escuro');
+        document.getElementById('botao_tema').textContent = 'Modo claro';
+        mensagem = "Modo escuro ligado";
+
+    }else{
+
+        document.body.classList.remove('escuro');
+        document.getElementById('botao_tema').textContent = 'Modo escuro';
+        mensagem = "Modo claro ligado";
+
+    }
+
+    alert(mensagem);
+
+}
+
+
+function mostrarCards (){
+
+    //iniciando as variaveis
+    let html = "";
+    let totalCurtidas = 0;
+    let mostrar;
+
+    //Pegando o filtro escolhido
+    let filtro = document.getElementById('filtro').value;
+
+    //percorrendo o array para criar um card de cada playlist
+    for (let i = 0; i < playlists.length; i++){
+
+        let p = playlists[i];
+
+        totalCurtidas = totalCurtidas + p.curtidas;
+
+        //serve para separar em opções sem usar vários if else
+        switch (filtro) {
+
+            case 'favoritos':
+                mostrar = p.favorito;
+            break
+
+            case 'populares':
+                mostrar = p.curtidas >= 5;
+            break
+
+            default:
+                mostrar = true;
+        }
+
+        if (mostrar){
+
+            //se for favorito, o card ganha a classe "favorito" (borda amarela)
+            let classe = "card";
+            let textoFavorito = "⭐ Favoritar";
+
+            if (p.favorito){
+                classe = "card favorito";
+                textoFavorito = "★ Favorita";
+            }
+
+            html = html +
+                "<div class='" + classe + "'>" +
+                    "<div class='emoji'>" + p.emoji + "</div>" +
+                    "<h3>" + p.nome + "</h3>" +
+                    "<p class='genero'>" + p.genero + "</p>" +
+                    "<p>❤ " + p.curtidas + " curtidas</p>" +
+                    "<button class='curtir' onclick='curtir(" + i + ")'>Curtir</button> " +
+                    "<button class='favoritar' onclick='favoritar(" + i + ")'>" + textoFavorito + "</button>" +
+                "</div>";
+        }
+    }
+
+    //caso nenhum card passe pelo filtro
+    if (html === ""){
+        html = "<p>Nenhuma playlist para mostrar.</p>";
+    }
+
+    //mostrando na tela
+    document.getElementById('cards').innerHTML = html;
+    document.getElementById('total').textContent = "Total de curtidas: " + totalCurtidas;
+
+}
+
+
+function curtir (posicao){
+
+    playlists[posicao].curtidas = playlists[posicao].curtidas + 1;
+
+    mostrarCards();
+
+    mensagem = "Você curtiu " + playlists[posicao].nome + ". Agora ela tem " + playlists[posicao].curtidas + " curtidas.";
+
+    //quando chega em 10 curtidas, acrescenta um aviso na mesma mensagem
+    if (playlists[posicao].curtidas === 10){
+
+        mensagem = mensagem + " É sucesso!";
+
+    }
+
+    alert(mensagem);
+
+}
+
+
+function favoritar (posicao){
+
+    //inverte o boolean do card
+    playlists[posicao].favorito = !playlists[posicao].favorito;
+
+    mostrarCards();
+
+    if (playlists[posicao].favorito){
+
+        mensagem = playlists[posicao].nome + " foi para as favoritas";
+
+    }else{
+
+        mensagem = playlists[posicao].nome + " saiu das favoritas";
+
+    }
+
+    //alert com a variável mensagem
+    alert(mensagem);
+
+}
+
+
+function filtrar (){
+
+    //Pegando o filtro escolhido
+    let filtro = document.getElementById('filtro').value;
+
+    mostrarCards();
+
+    switch (filtro) {
+
+        case 'favoritos':
+            mensagem = "Mostrando só as playlists favoritas";
+        break
+
+        case 'populares':
+            mensagem = "Mostrando só as playlists com 5 ou mais curtidas";
+        break
+
+        default:
+            mensagem = "Mostrando todas as playlists";
+    }
+
+    alert(mensagem);
+
+}
+
+
+//mostra os cards assim que a página abre
+mostrarCards();
+
+        </script>
+
+    </body>
+</html>
